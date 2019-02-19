@@ -16,7 +16,6 @@ moment().format();
 
 //Axios package
 var axios = require("axios");
-
 // Load the fs package to read and write
 var fs = require("fs");
 
