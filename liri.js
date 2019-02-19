@@ -1,17 +1,21 @@
 require("dotenv").config();
 
-//Axios package
-var axios = require("axios");
-
 //code to import keys js stored into a variable
 var keys = require("./keys.js");
+
+//Using the Spotify api and getting the key from keys.js
+var Spotify = require('node-spotify-api'); 
 
 //load the spotify keys
 var spotify = new Spotify(keys.spotify);
 
+
 //Required to use moment for node
 var moment = require('moment');
 moment().format();
+
+//Axios package
+var axios = require("axios");
 
 // Load the fs package to read and write
 var fs = require("fs");
@@ -20,21 +24,7 @@ var fs = require("fs");
 // The first will be the action (i.e. "concert", "spotify", etc.)
 // The second will be the value/name of band/song/movie
 var action = process.argv[2];
-var value = process.argv[3];
-
-// // Loop through all the words in the node argument
-//     // And do a little for-loop magic to handle the inclusion of "+"s
-//     for (var i = 2; i < value.length; i++) {
-
-//         if (i > 2 && i < value.length) {
-//             bandName = bandName + "+" + value[i];
-//         }
-//         else {
-//             bandName += value[i];
-
-//         }
-//     }
-
+var value = process.argv.slice(3).join("+");
 
 
 // switch-case will direct which function gets run.
@@ -61,40 +51,18 @@ switch (action) {
 
 //Funtion for concert-this Bands in Town API
 function concert(value) {
-    // Create an empty variable for holding the movie name
-    var bandName = "";
 
-    // // Loop through all the words in the node argument
-    // // And do a little for-loop magic to handle the inclusion of "+"s
-    // for (var i = 2; i < value.length; i++) {
-
-    //     if (i > 2 && i < value.length) {
-    //         bandName = bandName + "+" + value[i];
-    //     }
-    //     else {
-    //         bandName += value[i];
-
-    //     }
-    // }
-
-
-    var queryUrl = "https://rest.bandsintown.com/artists/" + value + "/events?app_id=codingbootcamp";
+    var queryUrl = "https://rest.bandsintown.com/artists/" + value + "/events?app_id=" + keys.bandsintown.id + '"';
 
     axios.get(queryUrl).then(
         function (response) {
 
             for (var i = 0; i < response.data.length; i++) {
-
-                var date = response.data[i].date; //Saves datetime response into a variable
-                var dateSplit = date.split('T'); //Attempting to split the date and time in the response
-
                 console.log("\nVenue Name: " + response.data[i].venue.name +
                     "\nVenue Location: " + response.data[i].venue.city +
-                    "\nDate of the Event: " + moment(dateSplit[0], "MM-DD-YYYY")); //dateArr[0] should be the date separated from the time
-
+                    "\nDate of the Event: " + moment(response.data[i].datetime).format("MM/DD/YYYY")); 
             }
-
-
+     
         })
         .catch(function (error) {
             if (error.response) {
