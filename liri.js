@@ -18,15 +18,13 @@ var axios = require("axios");
 // Load the fs package to read and write
 var fs = require("fs");
 
-var logline = "----------------------------------";
-
+var logline = "------------------------------------------------------------";
 
 // Take two arguments.
 // The first will be the action (i.e. "concert", "spotify", etc.)
 // The second will be the value/name of band/song/movie
 var action = process.argv[2];
 var value = process.argv.slice(3).join(" ");
-var artistName = process.argv.slice(3).join(" ");
 
 
 // switch-case will direct which function gets run.
@@ -51,93 +49,104 @@ switch (action) {
 }
 
 
-function logline() {
-    console.log("----------------------------------");
-}
-
 
 function logData(data) {
     fs.appendFile("log.txt", data, function (error) {
-        if (error) {
-            console.log(error);
-        }
+        if (error) throw error;
     });
 }
 
 
-
 //Funtion for concert-this Bands in Town API
-function concert(artist) {
+function concert() {
     var actionText = ('\n' + logline + '\n' + action + " : " + value + '\n' + logline);
 
-    console.log(actionText);
-    logData(actionText);
+    console.log("\n" + actionText);
+    logData("\n" + actionText);
 
     var queryUrl = "https://rest.bandsintown.com/artists/" + value + "/events?app_id=" + keys.bandsintown.id;
 
     axios.get(queryUrl).then(
-            function (response) {
-                if (artist = undefined) {
-                    var nullText = ("\nSorry it looks like that artist isn't on the road. Please search again...");
-                    console.log(nullText);
-                    logData(nullText);
-                }
+        function (response, error) {
+            var data = response.data;
 
-                // var introText = ("\n" + logline + '\nUpcoming concerts for ' + value + "\n" + logline);
-                // console.log(introText);
-                // logData(introText);
+            if (!error && data.length > 0) {
 
-                for (var i = 0; i < 3 && i < response.data.length; i++) {
-                    var outputData = ('\nVenue Name: ' + response.data[i].venue.name + '\nVenue Location: ' + response.data[i].venue.city + ', ' + response.data[i].venue.country + '\nDate of the Event: ' + moment(response.data[i].datetime).format("MM/DD/YYYY") + "\n");
-                    console.log(outputData);
-                    logData(outputData);
-                }
-            })
-            .catch(function (error) {
-                if (error.response) {
-                    // The request was made and the server responded with a status code
-                    // that falls out of the range of 2xx
-                    console.log(error.response.data);
-                    console.log(error.response.status);
-                    console.log(error.response.headers);
-                } else if (error.request) {
-                    // The request was made but no response was received
-                    // `error.request` is an object that comes back with details pertaining to the error that occurred.
-                    console.log(error.request);
-                } else {
-                    // Something happened in setting up the request that triggered an Error
-                    console.log("Error", error.message);
-                }
-                console.log(error.config);
-            });
+            var introText = ('Upcoming concerts for ' + value + ":\n");
+            console.log(introText);
+            logData("\n" + introText);
 
+            for (var i = 0; i < 3 && i < data.length; i++) {
+                var concertData = [
+                    "Venue Name: " + data[i].venue.name,
+                    "Venue Location: " + data[i].venue.city + ', ' + data[i].venue.country,
+                    "Date of the Event: " + moment(data[i].datetime).format("MM/DD/YYYY")
+                ].join("\n");
+
+                console.log(concertData + "\n");
+                logData("\n" + concertData + "\n");
+            }
+        } else {
+            var nullText = ("\nSorry, it doesn't look like that artist is on the road. Please search again...\n");
+            console.log(nullText);
+            logData("\n" + nullText);
+        }
+        })
+        .catch(function (error) {
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx
+                var reqText = "\nBad request. Check your search and please search again...\n"
+                console.log(reqText);
+                logData(reqText)
+                console.log(error.response.data);
+                console.log(error.response.status);
+                console.log(error.response.headers);
+            } else if (error.request) {
+                // The request was made but no response was received
+                // `error.request` is an object that comes back with details pertaining to the error that occurred.
+                console.log(error.request);
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                var errText = "\nSorry, that artist couldn't be found. Please search again...\n"
+                console.log(errText);
+                logData(errText)
+                // console.log("Error", error.message);
+                // logData(errText + error.message);
+            }
+            // console.log(error.config);
+        });
 }
 
-// var errorText = ("\nSorry no concerts for that artist could be found. Please search again...");
-//             console.log(errorText);
-//             logData(errorText);
 
 function omdb() {
     var movieName = process.argv.slice(3).join(" ");
     var queryUrl = "http://www.omdbapi.com/?t=Mr.+Nobody&y=&plot=short&apikey=" + keys.omdb.id;
 
-
     if (!movieName) {
         var actionText = ('\n' + logline + '\n' + action + " : " + value + '\n' + logline);
-    console.log(actionText);
-    logData(actionText);
+        console.log(actionText);
+        logData(actionText);
         axios.get(queryUrl).then(
             function (response) {
-                console.log(logline)
-                console.log("Title: " + response.data.Title);
-                console.log("Year Released: " + response.data.Year);
-                console.log("IMDB Rating: " + response.data.imdbRating);
-                console.log("Rotten Tomatoes Rating: " + response.data.Ratings[1].Value);
-                console.log("Country/Countries Produced: " + response.data.Country);
-                console.log("Language(s): " + response.data.Language);
-                console.log("Plot: " + response.data.Plot);
-                console.log("Actors: " + response.data.Actors);
-                console.log(logline);
+                var introText = ('Movie stats for ' + "Mr. Nobody" + ":\n");
+                console.log(introText);
+                logData("\n" + introText);
+
+                var movieData = [
+                    "Title: " + response.data.Title,
+                    "Year Released: " + response.data.Year,
+                    "IMDB Rating: " + response.data.imdbRating,
+                    "Rotten Tomatoes Rating: " + response.data.Ratings[1].Value,
+                    "Country/Countries Produced: " + response.data.Country,
+                    "Language(s): " + response.data.Language,
+                    "Plot: " + response.data.Plot,
+                    "Actors: " + response.data.Actors
+                ].join("\n");
+
+                console.log(movieData + "\n");
+                logData("\n" + movieData + "\n");
+
             })
             .catch(function (error) {
                 if (error.response) {
@@ -152,28 +161,39 @@ function omdb() {
                     console.log(error.request);
                 } else {
                     // Something happened in setting up the request that triggered an Error
-                    console.log("Error", error.message);
+                    // console.log("Error", error.message);
+                    var errText = "\nSorry, that movie couldn't be found. Please search again...\n"
+                    console.log(errText);
+                    logData(errText)
                 }
-                console.log(error.config);
+                // console.log(error.config);
             });
-            
+
     } else {
         var actionText = ('\n' + logline + '\n' + action + " : " + value + '\n' + logline);
-    console.log(actionText);
-    logData(actionText);
+        console.log(actionText);
+        logData(actionText);
         var queryUrl = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&apikey=" + keys.omdb.id;
         axios.get(queryUrl).then(
             function (response) {
-                console.log(logline)
-                console.log("Title: " + response.data.Title);
-                console.log("Year Released: " + response.data.Year);
-                console.log("IMDB Rating: " + response.data.imdbRating);
-                console.log("Rotten Tomatoes Rating: " + response.data.Ratings[1].Value);
-                console.log("Country/Countries Produced: " + response.data.Country);
-                console.log("Language(s): " + response.data.Language);
-                console.log("Plot: " + response.data.Plot);
-                console.log("Actors: " + response.data.Actors);
-                console.log(logline)
+
+                var introText = ('Movie stats for ' + value + ":\n");
+                console.log(introText);
+                logData("\n" + introText);
+
+                var movieData = [
+                    "Title: " + response.data.Title,
+                    "Year Released: " + response.data.Year,
+                    "IMDB Rating: " + response.data.imdbRating,
+                    "Rotten Tomatoes Rating: " + response.data.Ratings[1].Value,
+                    "Country/Countries Produced: " + response.data.Country,
+                    "Language(s): " + response.data.Language,
+                    "Plot: " + response.data.Plot,
+                    "Actors: " + response.data.Actors
+                ].join("\n");
+
+                console.log(movieData + "\n");
+                logData("\n" + movieData + "\n");
             })
             .catch(function (error) {
                 if (error.response) {
@@ -188,10 +208,13 @@ function omdb() {
                     console.log(error.request);
                 } else {
                     // Something happened in setting up the request that triggered an Error
-                    console.log("Error", error.message);
+                    // console.log("Error", error.message);
+                    var errText = "\nSorry, that movie couldn't be found. Please search again...\n"
+                    console.log(errText);
+                    logData(errText)
                 }
-                console.log(error.config);
+                // console.log(error.config);
             });
-            
+
     }
 }
