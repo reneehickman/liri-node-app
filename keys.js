@@ -9,3 +9,8 @@ exports.bandsintown = {
 id: process.env.BANDSINTOWN_APP_ID
 };
 
+
+exports.omdb = {
+  id: process.env.OMDB_ID
+};
+
