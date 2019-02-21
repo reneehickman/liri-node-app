@@ -119,61 +119,16 @@ function concert() {
 }
 
 
-function omdb() {
-    var movieName = process.argv.slice(3).join(" ");
-    var queryUrl = "http://www.omdbapi.com/?t=Mr.+Nobody&y=&plot=short&apikey=" + keys.omdb.id;
+function omdb(value) {
 
-    if (!movieName) {
+    if (!value) {
+        value = "Mr. Nobody";
+
+    } 
         var actionText = ('\n' + logline + '\n' + action + " : " + value + '\n' + logline);
         console.log(actionText);
         logData(actionText);
-        axios.get(queryUrl).then(
-            function (response) {
-                var introText = ('Movie stats for ' + "Mr. Nobody" + ":\n");
-                console.log(introText);
-                logData("\n" + introText);
-
-                var movieData = [
-                    "Title: " + response.data.Title,
-                    "Year Released: " + response.data.Year,
-                    "IMDB Rating: " + response.data.imdbRating,
-                    "Rotten Tomatoes Rating: " + response.data.Ratings[1].Value,
-                    "Country/Countries Produced: " + response.data.Country,
-                    "Language(s): " + response.data.Language,
-                    "Plot: " + response.data.Plot,
-                    "Actors: " + response.data.Actors
-                ].join("\n");
-
-                console.log(movieData + "\n");
-                logData("\n" + movieData + "\n");
-
-            })
-            .catch(function (error) {
-                if (error.response) {
-                    // The request was made and the server responded with a status code
-                    // that falls out of the range of 2xx
-                    console.log(error.response.data);
-                    console.log(error.response.status);
-                    console.log(error.response.headers);
-                } else if (error.request) {
-                    // The request was made but no response was received
-                    // `error.request` is an object that comes back with details pertaining to the error that occurred.
-                    console.log(error.request);
-                } else {
-                    // Something happened in setting up the request that triggered an Error
-                    // console.log("Error", error.message);
-                    var errText = "\nSorry, that movie couldn't be found. Please search again...\n"
-                    console.log(errText);
-                    logData(errText)
-                }
-                // console.log(error.config);
-            });
-
-    } else {
-        var actionText = ('\n' + logline + '\n' + action + " : " + value + '\n' + logline);
-        console.log(actionText);
-        logData(actionText);
-        var queryUrl = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&apikey=" + keys.omdb.id;
+        var queryUrl = "http://www.omdbapi.com/?t=" + value + "&y=&plot=short&apikey=" + keys.omdb.id;
         axios.get(queryUrl).then(
             function (response) {
 
@@ -217,4 +172,3 @@ function omdb() {
             });
 
     }
-}
