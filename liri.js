@@ -9,6 +9,7 @@ var Spotify = require('node-spotify-api');
 //load the spotify keys
 var spotify = new Spotify(keys.spotify);
 
+
 //Required to use moment for node
 var moment = require('moment');
 moment().format();
@@ -34,7 +35,7 @@ switch (action) {
         break;
 
     case 'spotify-this-song':
-        spotify(value);
+        spotifyThis(value);
         break;
 
     case 'movie-this':
@@ -42,12 +43,11 @@ switch (action) {
         break;
 
     case 'do-what-it-says':
-        doWhatItSays(value);
+        doIt(value);
         break;
     default:
         console.log("Invalid action. Please enter one of the following: \nconcert-this \nspotify-this-song \nmovie-this \ndo-what-it-says")
 }
-
 
 
 function logData(data) {
@@ -58,8 +58,8 @@ function logData(data) {
 
 
 //Funtion for concert-this Bands in Town API
-function concert() {
-    var actionText = ('\n' + logline + '\n' + action + " : " + value + '\n' + logline);
+function concert(value) {
+    var actionText = (logline + '\n' + action + " : " + value + '\n' + logline);
 
     console.log("\n" + actionText);
     logData("\n" + actionText);
@@ -72,25 +72,80 @@ function concert() {
 
             if (!error && data.length > 0) {
 
-            var introText = ('Upcoming concerts for ' + value + ":\n");
-            console.log(introText);
-            logData("\n" + introText);
+                var introText = ('Upcoming concerts for ' + value + ":\n");
+                console.log(introText);
+                logData("\n" + introText);
 
-            for (var i = 0; i < 3 && i < data.length; i++) {
-                var concertData = [
-                    "Venue Name: " + data[i].venue.name,
-                    "Venue Location: " + data[i].venue.city + ', ' + data[i].venue.country,
-                    "Date of the Event: " + moment(data[i].datetime).format("MM/DD/YYYY")
-                ].join("\n");
+                for (var i = 0; i < 3 && i < data.length; i++) {
+                    var concertData = [
+                        "Venue Name: " + data[i].venue.name,
+                        "Venue Location: " + data[i].venue.city + ', ' + data[i].venue.country,
+                        "Date of the Event: " + moment(data[i].datetime).format("MM/DD/YYYY")
+                    ].join("\n");
 
-                console.log(concertData + "\n");
-                logData("\n" + concertData + "\n");
+                    console.log(concertData + "\n");
+                    logData("\n" + concertData + "\n");
+                }
+            } else {
+                var nullText = ("\nSorry, it doesn't look like that artist is on the road. Please search again...\n");
+                console.log(nullText);
+                logData("\n" + nullText);
             }
-        } else {
-            var nullText = ("\nSorry, it doesn't look like that artist is on the road. Please search again...\n");
-            console.log(nullText);
-            logData("\n" + nullText);
-        }
+        })
+        .catch(function (error) {
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx
+                var reqText = "\nPlease enter an artist and try your search again...\n"
+                console.log(reqText);
+                logData("\n" + reqText)
+                console.log(error.response.data);
+                console.log(error.response.status);
+                console.log(error.response.headers);
+            } else if (error.request) {
+                // The request was made but no response was received
+                // `error.request` is an object that comes back with details pertaining to the error that occurred.
+                console.log(error.request);
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                var errText = "Sorry, that artist couldn't be found. Please search again...\n"
+                console.log(errText);
+                logData("\n" + errText)
+                // console.log("Error", error.message);
+                // logData(errText + error.message);
+            }
+            // console.log(error.config);
+        });
+}
+
+
+function spotifyThis(value) {
+    if (!value) {
+        value = "The Sign";
+    }
+
+    var actionText = ('\n' + logline + '\n' + action + " : " + value + '\n' + logline);
+
+    console.log("\n" + actionText);
+    logData("\n" + actionText);
+
+    spotify
+        .search({
+            type: 'track',
+            query: value
+        })
+        .then(function (response) {
+            var data = response.data;
+            var songData = [
+                "Artist(s): " + data[0].artists[0].name,
+                "Song Name: " + data[0].name,
+                "Preview Link: " + data[0].preview_url,
+                "Album Name: " + data[0].album.name
+            ].join("\n");
+
+            console.log(songData + "\n");
+            logData("\n" + songData + "\n");
+
         })
         .catch(function (error) {
             if (error.response) {
@@ -108,10 +163,10 @@ function concert() {
                 console.log(error.request);
             } else {
                 // Something happened in setting up the request that triggered an Error
-                var errText = "\nSorry, that artist couldn't be found. Please search again...\n"
+                var errText = "\nSorry, that song couldn't be found. Please try again...\n"
                 console.log(errText);
                 logData(errText)
-                // console.log("Error", error.message);
+                console.log("Error", error.message);
                 // logData(errText + error.message);
             }
             // console.log(error.config);
@@ -123,52 +178,84 @@ function omdb(value) {
 
     if (!value) {
         value = "Mr. Nobody";
-
-    } 
-        var actionText = ('\n' + logline + '\n' + action + " : " + value + '\n' + logline);
-        console.log(actionText);
-        logData(actionText);
-        var queryUrl = "http://www.omdbapi.com/?t=" + value + "&y=&plot=short&apikey=" + keys.omdb.id;
-        axios.get(queryUrl).then(
-            function (response) {
-
-                var introText = ('Movie stats for ' + value + ":\n");
-                console.log(introText);
-                logData("\n" + introText);
-
-                var movieData = [
-                    "Title: " + response.data.Title,
-                    "Year Released: " + response.data.Year,
-                    "IMDB Rating: " + response.data.imdbRating,
-                    "Rotten Tomatoes Rating: " + response.data.Ratings[1].Value,
-                    "Country/Countries Produced: " + response.data.Country,
-                    "Language(s): " + response.data.Language,
-                    "Plot: " + response.data.Plot,
-                    "Actors: " + response.data.Actors
-                ].join("\n");
-
-                console.log(movieData + "\n");
-                logData("\n" + movieData + "\n");
-            })
-            .catch(function (error) {
-                if (error.response) {
-                    // The request was made and the server responded with a status code
-                    // that falls out of the range of 2xx
-                    console.log(error.response.data);
-                    console.log(error.response.status);
-                    console.log(error.response.headers);
-                } else if (error.request) {
-                    // The request was made but no response was received
-                    // `error.request` is an object that comes back with details pertaining to the error that occurred.
-                    console.log(error.request);
-                } else {
-                    // Something happened in setting up the request that triggered an Error
-                    // console.log("Error", error.message);
-                    var errText = "\nSorry, that movie couldn't be found. Please search again...\n"
-                    console.log(errText);
-                    logData(errText)
-                }
-                // console.log(error.config);
-            });
-
     }
+    var actionText = ('\n' + logline + '\n' + action + " : " + value + '\n' + logline);
+    console.log(actionText);
+    logData(actionText);
+    var queryUrl = "http://www.omdbapi.com/?t=" + value + "&y=&plot=short&apikey=" + keys.omdb.id;
+    axios.get(queryUrl).then(
+        function (response) {
+            var data = response.data;
+            var introText = ('Movie stats for ' + value + ":\n");
+            console.log(introText);
+            logData("\n" + introText);
+
+            var movieData = [
+                "Title: " + data.Title,
+                "Year Released: " + data.Year,
+                "IMDB Rating: " + data.imdbRating,
+                "Rotten Tomatoes Rating: " + data.Ratings[1].Value,
+                "Country/Countries Produced: " + data.Country,
+                "Language(s): " + data.Language,
+                "Plot: " + data.Plot,
+                "Actors: " + data.Actors
+            ].join("\n");
+
+            console.log(movieData + "\n");
+            logData("\n" + movieData + "\n");
+        })
+        .catch(function (error) {
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx
+                console.log(error.response.data);
+                console.log(error.response.status);
+                console.log(error.response.headers);
+            } else if (error.request) {
+                // The request was made but no response was received
+                // `error.request` is an object that comes back with details pertaining to the error that occurred.
+                console.log(error.request);
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                var errText = "\nSorry, that movie couldn't be found. Please search again...\n"
+                console.log(errText);
+                console.log("Error", error.message);
+                logData("\n" + errText)
+            }
+            // console.log(error.config);
+        });
+
+}
+
+
+
+function doIt(){
+    fs.readFile("random.txt", "utf8", function(error, data) {
+        if (error) throw error;
+
+        var splitValue = data.split(",").slice(1).join('');
+        var command = data.split(",").slice(0,1).toString();
+        // console.log(command + valueToRun)
+
+        var valueToRun = splitValue.split('"').join('');
+
+        switch(command) {
+            case "spotify-this-song":
+               spotifyThis(valueToRun);
+                break;
+            case "concert-this":
+                concert(valueToRun);
+                break;
+            case "movie-this":
+                omdb(valueToRun);
+                break;
+            default:
+                console.log("error reading file");
+        }
+    
+    })
+}
+
+
+
+
