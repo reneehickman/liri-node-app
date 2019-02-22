@@ -87,7 +87,7 @@ function concert(value) {
                     logData("\n" + concertData + "\n");
                 }
             } else {
-                var nullText = ("\nSorry, it doesn't look like that artist is on the road. Please search again...\n");
+                var nullText = ("\nSorry, it doesn't look like that artist/band is on the road...\n");
                 console.log(nullText);
                 logData("\n" + nullText);
             }
@@ -96,7 +96,7 @@ function concert(value) {
             if (error.response) {
                 // The request was made and the server responded with a status code
                 // that falls out of the range of 2xx
-                var reqText = "\nPlease enter an artist and try your search again...\n"
+                var reqText = "\nPlease enter an artist/band and try your search again...\n"
                 console.log(reqText);
                 logData("\n" + reqText)
                 console.log(error.response.data);
@@ -108,7 +108,7 @@ function concert(value) {
                 console.log(error.request);
             } else {
                 // Something happened in setting up the request that triggered an Error
-                var errText = "Sorry, that artist couldn't be found. Please search again...\n"
+                var errText = "Sorry, that artist/band couldn't be found. Please try your search again...\n"
                 console.log(errText);
                 logData("\n" + errText)
                 // console.log("Error", error.message);
@@ -151,9 +151,6 @@ function spotifyThis(value) {
             if (error.response) {
                 // The request was made and the server responded with a status code
                 // that falls out of the range of 2xx
-                var reqText = "\nBad request. Check your search and please search again...\n"
-                console.log(reqText);
-                logData(reqText)
                 console.log(error.response.data);
                 console.log(error.response.status);
                 console.log(error.response.headers);
@@ -219,7 +216,7 @@ function omdb(value) {
                 // Something happened in setting up the request that triggered an Error
                 var errText = "\nSorry, that movie couldn't be found. Please search again...\n"
                 console.log(errText);
-                console.log("Error", error.message);
+                // console.log("Error", error.message);
                 logData("\n" + errText)
             }
             // console.log(error.config);
@@ -228,16 +225,15 @@ function omdb(value) {
 }
 
 
-
 function doIt(){
     fs.readFile("random.txt", "utf8", function(error, data) {
         if (error) throw error;
 
         var splitValue = data.split(",").slice(1).join('');
         var command = data.split(",").slice(0,1).toString();
-        // console.log(command + valueToRun)
 
         var valueToRun = splitValue.split('"').join('');
+        // console.log(command + valueToRun)
 
         switch(command) {
             case "spotify-this-song":
