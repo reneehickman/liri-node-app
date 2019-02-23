@@ -1,10 +1,10 @@
-# liri-node-app
+# LIRI BOT
 
-## LIRI - Not to be confused with SIRI
 LIRI is a Language Interpretation and Recognition Interface. LIRI is a command line Node.js app that takes in parameters and passes back data based on those parameters. LIRI searches Spotify for songs, Bandsintown for concerts, and OMDB for movies.
 
 `.gitignore` is used to hide API keys which are stored locally and kept safe through abstraction by `.env`, requiring users to provide their own API keys if they intend to use the app. All data input by the user to the terminal is logged into `log.txt` using `fs.appendFile` in the `logData()` function.
 
+![Liri Bot Gif](screenRecord.gif)
 
 ### LIRI Commands
 
